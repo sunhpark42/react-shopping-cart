@@ -7,7 +7,9 @@ const SIZE = {
   'x-large': '570px',
 };
 
-export const Container = styled.div`
+export const Container = styled.div``;
+
+export const Wrapper = styled.div`
   width: ${({ size }) => SIZE[size]};
   height: ${({ size }) => SIZE[size]};
   overflow: hidden;
@@ -19,14 +21,9 @@ export const Image = styled.img`
   height: inherit;
   transition: transform 0.5s ease;
   object-fit: cover;
+  cursor: pointer;
 
-  ${({ onClick }) =>
-    onClick &&
-    `
-    cursor: pointer;
-  
-    &:hover {
-      transform: scale(1.1);
-    }
-    `}
+  &:hover {
+    transform: scale(1.1);
+  }
 `;

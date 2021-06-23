@@ -1,30 +1,27 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-
-import useFetch from '../../hooks/useFetch';
+import { useSelector, useDispatch } from 'react-redux';
+import { addItemToCart } from '../../store/cartReducer';
 import API from '../../request/api';
-import { FETCH_URL, MESSAGE, PATH } from '../../constants';
+import { MESSAGE, PATH } from '../../constants';
 import { Grid, Card, IconButton } from '../../components/shared';
-
 import { Description, Price } from './style';
 import { ReactComponent as CartIcon } from '../../assets/icons/cart.svg';
 
 const ProductList = () => {
-  const [list, productListError] = useFetch(FETCH_URL.GET_PRODUCTS);
+  const list = useSelector(state => state.productReducer.productList);
+  const dispatch = useDispatch();
   const history = useHistory();
-
-  if (productListError) {
-    return <>상품을 불러올 수 없습니다. 다시 시도해주세요😭</>;
-  }
 
   const goDetailPage = id => () => {
     history.push(`${PATH.GOODS_DETAIL}/${id}`);
   };
 
-  const addCart = id => async () => {
+  const addCart = data => async () => {
     try {
-      await API.addItemToCart(id);
+      const newCartItem = await API.addItemToCart({ ...data, quantity: 1, checked: true });
 
+      dispatch(addItemToCart(newCartItem));
       alert(MESSAGE.SUCCESS_ADD_ITEM_TO_CART);
     } catch (error) {
       console.error(error.message);
@@ -34,28 +31,26 @@ const ProductList = () => {
 
   return (
     <Grid col="4">
-      {Object.values(list).map(({ product_id: id, name, image_url: image, price }) => {
-        return (
-          <Card
-            key={id}
-            title={name}
-            thumbnail={{ image: image, alt: name }}
-            onClick={goDetailPage(id)}
-            description={
-              <Description>
-                <Price>{price.toLocaleString('ko-KR')} 원</Price>
-                <IconButton
-                  size="medium"
-                  ariaLabel={`${name}을 장바구니에 담기`}
-                  onClick={addCart(id)}
-                >
-                  <CartIcon />
-                </IconButton>
-              </Description>
-            }
-          />
-        );
-      })}
+      {Object.values(list).map(({ id, name, image, price }) => (
+        <Card
+          key={id}
+          title={name}
+          thumbnail={{ image, alt: name }}
+          onClick={goDetailPage(id)}
+          description={
+            <Description>
+              <Price>{price.toLocaleString('ko-KR')} 원</Price>
+              <IconButton
+                size="medium"
+                ariaLabel={`${name}을 장바구니에 담기`}
+                onClick={addCart({ id, name, image, price })}
+              >
+                <CartIcon />
+              </IconButton>
+            </Description>
+          }
+        />
+      ))}
     </Grid>
   );
 };
